@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<level id="1">
+    <metadata>
+        <name>Home Adventure</name>
+        <description>Explore the multi-floor house!</description>
+        <difficulty>easy</difficulty>
+        <time_limit>300</time_limit>
+    </metadata>
+    <characters>
+        <cat x="100" y="100" />
+    </characters>
+    <background>
+        <image src="asset/background/bg-1.png" />
+        <ambient_color>rgba(255, 255, 255, 1)</ambient_color>
+    </background>
+    <platforms>
+        <!-- Floor -->
+        <platform>
+            <position x="0" y="254" />
+            <size width="1024" height="20" />
+            <type>floor</type>
+        </platform>
+
+        <!-- Left Border -->
+        <platform>
+            <position x="-1" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <!-- Right Border -->
+        <platform>
+            <position x="1020" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <platform>
+            <position x="220" y="150" />
+            <size width="20" height="100" />
+            <type>passable</type>
+        </platform>
+
+        <!-- kitchen top -->
+        <platform>
+            <position x="380" y="180" />
+            <size width="130" height="75" />
+            <type>platform</type>
+        </platform>
+
+        <!-- book shelve -->
+        <platform>
+            <position x="520" y="130" />
+            <size width="110" height="120" />
+            <type>platform</type>
+        </platform>
+
+        <!-- Gate -->
+        <platform>
+            <position x="1000" y="120" />
+            <size width="25" height="85" />
+            <type>gate</type>
+        </platform>
+    </platforms>
+    <collectibles>
+        <treat>
+            <position x="465" y="150" />
+            <type>cat_treat</type>
+            <points>100</points>
+        </treat>
+    </collectibles>
+</level>

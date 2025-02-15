@@ -1,0 +1,13 @@
+# PHP temporary files
+*.php_tmp
+*.tmp
+
+# Dump folders
+dump/
+*_dump/
+/dump/*
+
+# IDE and system files
+.idea/
+.vscode/
+.DS_Store
