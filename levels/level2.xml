@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<level id="2">
+    <characters>
+        <cat x="100" y="100" />
+    </characters>
+    <background>
+        <image src="asset/background/bg-2.png" />
+        <ambient_color>rgba(255, 255, 255, 1)</ambient_color>
+    </background>
+    <platforms>
+        <!-- Floor -->
+        <platform>
+            <position x="0" y="254" />
+            <size width="1024" height="20" />
+            <type>floor</type>
+        </platform>
+
+        <!-- Left Border -->
+        <platform>
+            <position x="-1" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <!-- Right Border -->
+        <platform>
+            <position x="1020" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <!-- kitchen counter -->
+        <platform>
+            <position x="380" y="180" />
+            <size width="130" height="75" />
+            <type>counter</type>
+        </platform>
+
+        <!-- fridge -->
+        <platform>
+            <position x="520" y="130" />
+            <size width="110" height="120" />
+            <type>fridge</type>
+        </platform>
+
+        <!-- Gate -->
+        <platform>
+            <position x="1000" y="120" />
+            <size width="25" height="85" />
+            <type>gate</type>
+        </platform>
+    </platforms>
+    <collectibles>
+        <treat>
+            <position x="465" y="150" />
+            <type>cat_treat</type>
+            <points>100</points>
+        </treat>
+    </collectibles>
+    <subtitles>
+        <message id="start" duration="1500" delay="0">
+            <text>The kitchen! I can smell treats here...</text>
+        </message>
+        <message id="lookingForTreats" duration="1500" delay="0">
+            <text>I bet they left some treats around...</text>
+        </message>
+        <message id="nearCounter" duration="1500" delay="0">
+            <text>*sniff sniff* Something smells good up here!</text>
+        </message>
+        <message id="nearFridge" duration="1500" delay="0">
+            <text>The sacred food temple! But it's closed...</text>
+        </message>
+        <message id="collectTreat" duration="1500" delay="0">
+            <text>Yum! Just what I needed!</text>
+        </message>
+    </subtitles>
+</level>

@@ -1,30 +1,185 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
 body {
-    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 100vh;
-    font-family: 'Segoe UI', 'Arial', sans-serif;
-    color: #e2e8f0;
-    overflow: hidden;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  font-family: "Segoe UI", "Arial", sans-serif;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+/* Intro Screen Styles */
+.intro-screen {
+  background: black;
+  transition: background-color 3s ease-in-out;
+}
+
+.intro-screen.waking-up {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+}
+
+#eyelids {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.eyelid {
+  position: absolute;
+  width: 100%;
+  height: 50%;
+  background: black;
+  transition: transform 3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#top-eyelid {
+  top: 0;
+  transform-origin: top;
+}
+
+#bottom-eyelid {
+  bottom: 0;
+  transform-origin: bottom;
+}
+
+.eyes-opening #top-eyelid {
+  transform: scaleY(0);
+}
+
+.eyes-opening #bottom-eyelid {
+  transform: scaleY(0);
+}
+
+#storyText {
+  color: white;
+  font-size: 32px;
+  text-align: center;
+  font-family: "Segoe UI", sans-serif;
+  opacity: 0;
+  transition: opacity 1s;
+  max-width: 80%;
+  line-height: 1.5;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.3);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.9),
+      0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.3);
+  }
+}
+
+#skipHint {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  color: #666;
+  font-size: 17px;
+  font-family: "Segoe UI", sans-serif;
+  opacity: 0.7;
+  transition: opacity 0.3s;
+}
+
+#skipHint:hover {
+  opacity: 1;
+}
+
+.italic {
+  font-style: italic;
+  color: #aaa;
+  text-shadow: 0 0 8px rgba(170, 170, 170, 0.5);
 }
 
 /* Game Container with Modern Styling */
 #gameContainer {
-    width: 1024px;
-    height: 576px;
+  width: 1024px;
+  height: 576px;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+#gameContainer.visible {
+  opacity: 1;
 }
 
 /* Canvas Styling */
 #gameCanvas {
-    border: 4px solid #34495e;
-    border-radius: 8px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-    background: #ecf0f1;
+  border: 4px solid #34495e;
+  border-radius: 8px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+  background: #ecf0f1;
+}
+
+/* Subtitle styling */
+#subtitle {
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 24px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+               0 0 20px rgba(255, 255, 255, 0.5);
+  background: rgba(0, 0, 0, 0.5);
+  padding: 10px 20px 20px;
+  border-radius: 10px;
+  z-index: 1000;
+  pointer-events: none;
+  max-width: 80%;
+  font-family: "Segoe UI", sans-serif;
+  margin-bottom: 30px;
+}
+
+@keyframes subtle-pulse {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+      0 0 25px rgba(255, 255, 255, 0.6);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.7),
+      0 0 20px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Page transition overlay */
+.page-transition {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: black;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease-in-out;
+  z-index: 1000;
+}
+
+.page-transition.active {
+  opacity: 1;
+  pointer-events: all;
 }

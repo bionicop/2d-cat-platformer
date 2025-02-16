@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<level id="3">
+    <characters>
+        <cat x="100" y="100" />
+    </characters>
+    <background>
+        <image src="asset/background/bg-3.png" />
+        <ambient_color>rgba(255, 255, 255, 1)</ambient_color>
+    </background>
+     <platforms>
+        <!-- Floor -->
+        <platform>
+            <position x="0" y="254" />
+            <size width="1024" height="20" />
+            <type>floor</type>
+        </platform>
+
+        <!-- Left Border -->
+        <platform>
+            <position x="-1" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <!-- Right Border -->
+        <platform>
+            <position x="1020" y="0" />
+            <size width="5" height="274" />
+            <type>wall</type>
+        </platform>
+
+        <!-- Desk -->
+        <platform>
+            <position x="10" y="120" />
+            <size width="80" height="60" />
+            <type>desk</type>
+            <passable>true</passable>
+        </platform>
+
+        <platform>
+            <position x="0" y="170" />
+            <size width="250" height="5" />
+            <type>floor-2</type>
+            <passable>true</passable>
+        </platform>
+
+        <!-- window -->
+        <platform>
+            <position x="280" y="90" />
+            <size width="80" height="70" />
+            <type>window</type>
+            <passable>true</passable>
+        </platform>
+
+        <!-- Sofa -->
+        <platform>
+            <position x="510" y="210" />
+            <size width="130" height="50" />
+            <type>sofa</type>
+            <passable>true</passable>
+        </platform>
+
+        <!-- Television -->
+        <platform>
+            <position x="900" y="180" />
+            <size width="60" height="40" />
+            <type>tv</type>
+            <passable>true</passable>
+        </platform>
+
+        <!-- Gate -->
+        <platform>
+            <position x="1015" y="120" />
+            <size width="10" height="85" />
+            <type>gate</type>
+        </platform>
+    </platforms>
+    <subtitles>
+        <message id="start" duration="1500" delay="0">
+            <text>The living room! Maybe there's more treats here...</text>
+        </message>
+        <message id="lookingForTreats" duration="1500" delay="0">
+            <text>I wonder what's outside the window...</text>
+        </message>
+        <message id="nearWindow" duration="1500" delay="0">
+            <text>*sees birds flying* Hey! Come back here!</text>
+        </message>
+        <message id="nearDesk" duration="1500" delay="0">
+            <text>Hmm, there might be something interesting on this desk...</text>
+        </message>
+        <message id="nearSofa" duration="1500" delay="0">
+            <text>The perfect spot for a cat nap... but not now!</text>
+        </message>
+        <message id="nearTv" duration="1500" delay="0">
+            <text>Oh! I see my reflection in the screen!</text>
+        </message>
+    </subtitles>
+</level>

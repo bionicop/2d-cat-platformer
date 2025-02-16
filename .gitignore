@@ -11,3 +11,6 @@ dump/
 .idea/
 .vscode/
 .DS_Store
+
+# Dummy text files
+dummy.txt

@@ -1,11 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <level id="1">
-    <metadata>
-        <name>Home Adventure</name>
-        <description>Explore the multi-floor house!</description>
-        <difficulty>easy</difficulty>
-        <time_limit>300</time_limit>
-    </metadata>
     <characters>
         <cat x="100" y="100" />
     </characters>
@@ -35,24 +29,19 @@
             <type>wall</type>
         </platform>
 
+        <!-- human's bed -->
         <platform>
-            <position x="220" y="150" />
-            <size width="20" height="100" />
-            <type>passable</type>
+            <position x="410" y="190" />
+            <size width="80" height="70" />
+            <type>bed</type>
         </platform>
 
-        <!-- kitchen top -->
+        <!-- telephone -->
         <platform>
-            <position x="380" y="180" />
-            <size width="130" height="75" />
-            <type>platform</type>
-        </platform>
-
-        <!-- book shelve -->
-        <platform>
-            <position x="520" y="130" />
-            <size width="110" height="120" />
-            <type>platform</type>
+            <position x="660" y="145" />
+            <size width="35" height="35" />
+            <type>phone</type>
+            <passable>true</passable>
         </platform>
 
         <!-- Gate -->
@@ -62,11 +51,18 @@
             <type>gate</type>
         </platform>
     </platforms>
-    <collectibles>
-        <treat>
-            <position x="465" y="150" />
-            <type>cat_treat</type>
-            <points>100</points>
-        </treat>
-    </collectibles>
+    <subtitles>
+        <message id="start" duration="3200" delay="0">
+            <text>*stretches paws* Mrrrowww... What a purr-fect nap...</text>
+        </message>
+        <message id="lookingForTreats" duration="2500" delay="0">
+            <text>*stomach growls* Oh! Time for some breakfast!</text>
+        </message>
+        <message id="nearBed" duration="1500" delay="0">
+            <text>The bed... No! It is forbidden by ancient cat law!</text>
+        </message>
+        <message id="nearPhone" duration="1500" delay="0">
+            <text>*brrring brrring* An old-fashioned landline! How quaint...</text>
+        </message>
+    </subtitles>
 </level>
