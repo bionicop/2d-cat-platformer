@@ -2,9 +2,10 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 // Game constants
-const gravity = 1;
-const moveSpeed = 7;
-const jumpForce = -15.5;
+const gravity = 0.5;
+const moveSpeed = 2.75;
+const jumpForce = -11.5;
+const collisionBoxOpacity = 0.35;
 
 canvas.width = 1024;
 canvas.height = 256;
@@ -120,36 +121,113 @@ class SubtitleSystem {
 // Sprite Class
 // ---------------------
 class Sprite {
-  constructor({ position, imageSrc, width = 50, height = 50 }) {
+  constructor({ position, width = 50, height = 50 }) {
+    // Basic properties
     this.position = position;
     this.velocity = { x: 0, y: 0 };
     this.width = width;
     this.height = height;
-    this.image = new Image();
-    this.imageLoaded = false;
-    if (imageSrc) {
-      this.image.onload = () => { this.imageLoaded = true; };
-      this.image.onerror = () => {
-        console.error('Failed to load image:', imageSrc);
-        this.imageLoaded = false;
+
+    // Player state tracking
+    this.isOnGround = false;
+    this.canPlayerJump = true;
+    this.isPlayerJumping = false;
+    this.isFacingLeft = false;
+
+    this.IDLE = 'idle';
+    this.WALK = 'walk';
+    this.JUMP = 'jump';
+
+    // Current animation that's playing
+    this.currentAnimation = this.IDLE;
+    this.animationFrame = 0;
+    this.lastFrameUpdateTime = 0;
+    this.frameUpdateInterval = 100;
+
+    // Loading all the character animations
+    this.animations = {
+      idle: {
+        img: new Image(),
+        frames: 4,
+        src: './asset/player/cat_idle.png',
+        loaded: false
+      },
+      walk: {
+        img: new Image(),
+        frames: 4,
+        src: './asset/player/cat_walk.png',
+        loaded: false
+      },
+      jump: {
+        img: new Image(),
+        frames: 4,
+        src: './asset/player/cat_jump.png',
+        loaded: false
+      }
+    };
+
+    this.loadAllAnimations();
+  }
+
+  // Load all the animation images
+  loadAllAnimations() {
+    // For each animation (idle, walk, jump)
+    Object.keys(this.animations).forEach(animName => {
+      const anim = this.animations[animName];
+
+      // When the image loads successfully
+      anim.img.onload = () => {
+        anim.loaded = true;
       };
-      this.image.src = imageSrc;
-    }
-    this.onGround = false;
-    this.canJump = true;
+
+      anim.img.onerror = () => {
+        console.error(`Couldn't load ${animName} animation: ${anim.src}`);
+      };
+
+      // loading the image
+      anim.img.src = anim.src;
+    });
   }
 
-  // Draw the sprite.
+  // Draw the character on screen
   draw() {
-    if (this.imageLoaded && this.image.src) {
-      ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
-    } else {
-      ctx.fillStyle = (this === background) ? 'lightgray' : 'red';
-      ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    // Current animation data
+    const animation = this.animations[this.currentAnimation];
+
+    // Only draw if the animation image is loaded
+    if (animation && animation.loaded) {
+      // frame size
+      const frameWidth = animation.img.width / animation.frames;
+      const frameHeight = animation.img.height;
+
+      ctx.save();
+
+      if (this.isFacingLeft) {
+        // Flipping image horizontally if left
+        ctx.scale(-1, 1);
+        ctx.translate(-this.position.x - this.width, this.position.y);
+      } else {
+        // Default if facing right
+        ctx.translate(this.position.x, this.position.y);
+      }
+
+      // Draw the current animation frame
+      ctx.drawImage(
+        animation.img,
+        this.animationFrame * frameWidth,
+        0,
+        frameWidth,
+        frameHeight,
+        0,
+        0,
+        this.width,
+        this.height
+      );
+
+      ctx.restore();
     }
   }
 
-  // Check collision with another object.
   checkCollision(object) {
     return (
       this.position.x < object.position.x + object.width &&
@@ -159,26 +237,74 @@ class Sprite {
     );
   }
 
-  // Update the sprite's position and handle collisions.
+  updateAnimation() {
+    const now = Date.now();
+
+    // Step 1: Choosing the right animation based on player's state
+    let newAnimation = this.currentAnimation;
+
+    // If the player is jumping and not touching the ground
+    if (this.isPlayerJumping && !this.isOnGround) {
+      newAnimation = this.JUMP;
+    }
+    // If the player is moving horizontally
+    else if (Math.abs(this.velocity.x) > 0.1) {
+      newAnimation = this.WALK;
+      // Update the direction the player is facing
+      this.isFacingLeft = this.velocity.x < 0;
+    }
+    // If the player is not moving
+    else {
+      newAnimation = this.IDLE;
+    }
+
+    // Step 2: Change the animation if needed
+    if (newAnimation !== this.currentAnimation) {
+      // Reset to the first frame when changing animations
+      this.animationFrame = 0;
+      this.currentAnimation = newAnimation;
+    }
+
+    // Step 3: Update the animation frame if enough time has passed
+    if (now - this.lastFrameUpdateTime > this.frameUpdateInterval) {
+      this.lastFrameUpdateTime = now;
+
+      // Get the current animation
+      const animation = this.animations[this.currentAnimation];
+
+      if (animation && animation.loaded) {
+        // next frame, and loop back if needed
+        this.animationFrame = (this.animationFrame + 1) % animation.frames;
+      }
+    }
+  }
+
   update() {
+    this.updateAnimation();
     this.draw();
+    const wasOnGroundBefore = this.isOnGround;
+    this.isOnGround = false;
+
     let nearestPlatform = null;
-    let minDistance = Infinity;
+    let nearestDistance = Infinity;
 
     // ----------------------
-    // Horizontal movement
+    // Handle horizontal movement
     // ----------------------
     this.position.x += this.velocity.x;
 
-    // Loop through each platform to check for collisions.
+    // Check for collisions with each platform
     platforms.forEach(platform => {
-      // If this platform is the gate.
+      // Special case: if this is a gate (level exit)
       if (platform.type === 'gate') {
-        const distance = Math.abs(this.position.x + this.width - platform.position.x);
-        if (distance < 20 && !gateTriggered) {
-          // Show the gate message.
+        // Check if player is close to the gate
+        const distanceToGate = Math.abs(this.position.x + this.width - platform.position.x);
+        if (distanceToGate < 20 && !gateTriggered) {
+          // Player reached the gate - show message and go to next level
           subtitleSystem.showGate();
           gateTriggered = true;
+
+          // Start the transition to the next level
           setTimeout(() => {
             const transition = document.querySelector('.page-transition');
             if (transition) {
@@ -189,7 +315,10 @@ class Sprite {
             }
           }, 800);
         }
-      } else if (this.checkCollision(platform)) {
+      }
+      // Normal platform collision
+      else if (this.checkCollision(platform)) {
+        // Calculate how close this platform is
         const centerX = this.position.x + this.width / 2;
         const centerY = this.position.y + this.height / 2;
         const platformCenterX = platform.position.x + platform.width / 2;
@@ -199,23 +328,27 @@ class Sprite {
           Math.pow(centerY - platformCenterY, 2)
         );
 
-        if (distance < minDistance) {
-          minDistance = distance;
+        // Keep track of the closest platform
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
           nearestPlatform = platform;
         }
 
-        // Handle collision for solid platforms.
+        // For solid platforms, stop the player from moving through them
         if (platform.solid !== false) {
+          // If moving right, push player left
           if (this.velocity.x > 0) {
             this.position.x = platform.position.x - this.width;
-          } else if (this.velocity.x < 0) {
+          }
+          // If moving left, push player right
+          else if (this.velocity.x < 0) {
             this.position.x = platform.position.x + platform.width;
           }
         }
       }
     });
 
-    // Show message for nearest platform if we're colliding with it
+    // Show message for the nearest platform
     if (nearestPlatform) {
       const nearKey = 'near' + nearestPlatform.type.charAt(0).toUpperCase() + nearestPlatform.type.slice(1);
       if (subtitleSystem.messages[nearKey]) {
@@ -224,33 +357,49 @@ class Sprite {
     }
 
     // ----------------------
-    // Vertical movement
+    // Handle vertical movement
     // ----------------------
     this.position.y += this.velocity.y;
-    this.onGround = false;
+
+    // Check all platforms for ground collision
     platforms.forEach(platform => {
       if (this.checkCollision(platform)) {
-        if (platform.solid === false) {
-          if (this.velocity.y > 0 && this.position.y + this.height - this.velocity.y <= platform.position.y) {
-            this.onGround = true;
+        // Case 1: Landing on top of a platform
+        if (this.velocity.y > 0) {
+          // Check if we're actually above the platform
+          const playerBottom = this.position.y + this.height;
+          const platformTop = platform.position.y;
+
+          // Small tolerance to make landing smoother
+          const landingTolerance = 10;
+
+          // If we were above the platform in the previous frame
+          if (playerBottom - this.velocity.y <= platformTop + landingTolerance) {
+            // We landed on the platform!
+            this.isOnGround = true;
             this.velocity.y = 0;
-            this.position.y = platform.position.y - this.height;
+            this.position.y = platformTop - this.height;
           }
-        } else if (platform.type !== 'gate') {
-          if (this.velocity.y > 0) {
-            this.onGround = true;
-            this.velocity.y = 0;
-            this.position.y = platform.position.y - this.height;
-          } else if (this.velocity.y < 0) {
-            this.velocity.y = 0;
-            this.position.y = platform.position.y + platform.height;
-          }
+        }
+        // Case 2: Hitting our head on the bottom of a platform
+        else if (this.velocity.y < 0 && platform.solid !== false) {
+          this.velocity.y = 0;
+          this.position.y = platform.position.y + platform.height;
         }
       }
     });
 
+    // Apply gravity if not on ground
+    if (!this.isOnGround) {
+      this.velocity.y += gravity;
+    } else {
+      // Reset jump-related flags when we're on the ground
+      this.canPlayerJump = true;
+      this.isPlayerJumping = false;
+    }
+
     // ----------------------
-    // Check collision with collectibles (treats)
+    // Check for collectibles (treats)
     // ----------------------
     collectibles.forEach(collectible => {
       if (this.checkCollision(collectible) && !collectible.collected) {
@@ -260,32 +409,42 @@ class Sprite {
         }
       }
     });
-
-    // Apply gravity if not on ground.
-    if (!this.onGround) {
-      this.velocity.y += gravity;
-    }
-    if (this.onGround) {
-      this.canJump = true;
-    }
   }
 }
 
 // ---------------------
 // Create the player and background sprites
 // ---------------------
+// Background sprite class that doesn't use animation
+class BackgroundSprite {
+  constructor({ position, width, height }) {
+    this.position = position;
+    this.width = width;
+    this.height = height;
+    this.image = new Image();
+    this.imageLoaded = false;
+  }
+
+  draw() {
+    if (this.imageLoaded && this.image) {
+      ctx.drawImage(this.image, this.position.x, this.position.y, this.width, this.height);
+    } else {
+      ctx.fillStyle = 'lightgray';
+      ctx.fillRect(this.position.x, this.position.y, this.width, this.height);
+    }
+  }
+}
+
 const player = new Sprite({
   position: { x: 0, y: 0 },
   width: 124,
-  height: 78,
-  imageSrc: './asset/player/cat.png'
+  height: 78
 });
 
-const background = new Sprite({
+const background = new BackgroundSprite({
   position: { x: 0, y: 0 },
   width: canvas.width,
-  height: canvas.height,
-  imageSrc: ''
+  height: canvas.height
 });
 
 // ---------------------
@@ -365,7 +524,11 @@ function initializeLevel() {
     player.position.x = parseInt(catStart.x);
     player.position.y = parseInt(catStart.y);
     player.velocity.y = 0;
-    player.onGround = false;
+    player.isOnGround = false;
+    player.canPlayerJump = true;
+    player.isPlayerJumping = false;
+    player.currentAnimation = player.IDLE;
+    player.animationFrame = 0;
 
     // Reset gate trigger on level init
     gateTriggered = false;
@@ -375,44 +538,67 @@ function initializeLevel() {
 }
 
 // ---------------------
-// Main Game Loop
+// Main Game Loop - This runs many times per second to update the game
 // ---------------------
 function gameLoop() {
   window.requestAnimationFrame(gameLoop);
 
-  // Clear the canvas.
+  // Clear the canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.fillStyle = 'white';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  // Draw the background.
+  // Draw the background
   background.draw();
 
-  // Draw each platform.
+  // Draw all platforms
   platforms.forEach(platform => {
-    ctx.fillStyle = 'rgba(255, 0, 0, 0.5)';
-    ctx.fillRect(platform.position.x, platform.position.y, platform.width, platform.height);
+    if (collisionBoxOpacity > 0) {
+      ctx.fillStyle = `rgba(255, 0, 0, ${collisionBoxOpacity})`;
+      ctx.fillRect(platform.position.x, platform.position.y, platform.width, platform.height);
+    }
   });
 
-  // Draw collectibles (treats).
   collectibles.forEach(collectible => {
-    if (!collectible.collected) {
-      ctx.fillStyle = collectible.type === 'cat_treat' ? 'yellow' : 'brown';
+    if (!collectible.collected && collisionBoxOpacity > 0) {
+      const baseColor = collectible.type === 'cat_treat' ? 'yellow' : 'brown';
+      const r = baseColor === 'yellow' ? 255 : 165;
+      const g = baseColor === 'yellow' ? 255 : 42;
+      const b = baseColor === 'yellow' ? 0 : 42;
+      ctx.fillStyle = `rgba(${r}, ${g}, ${b}, ${collisionBoxOpacity})`;
       ctx.fillRect(collectible.position.x, collectible.position.y, collectible.width, collectible.height);
     }
   });
 
   // ---------------------
-  // Update player movement based on key presses.
+  // Update player movement based on key presses
   // ---------------------
+
+  // Reset horizontal velocity
   player.velocity.x = 0;
-  if (keyPressed.a && lastKey === 'a') player.velocity.x = -moveSpeed;
-  if (keyPressed.d && lastKey === 'd') player.velocity.x = moveSpeed;
-  if (keyPressed.w && player.onGround && player.canJump) {
-    player.velocity.y = jumpForce;
-    player.onGround = false;
-    player.canJump = false;
+
+  // Move left
+  if (keyPressed.a && lastKey === 'a') {
+    player.velocity.x = -moveSpeed;
   }
 
+  // Move right
+  if (keyPressed.d && lastKey === 'd') {
+    player.velocity.x = moveSpeed;
+  }
+
+  // Jump when the W key is pressed
+  if (keyPressed.w) {
+    // Only jump if we're on the ground and able to jump
+    if (player.isOnGround && player.canPlayerJump) {
+      player.velocity.y = jumpForce;
+      player.isOnGround = false;
+      player.canPlayerJump = false;
+      player.isPlayerJumping = true;
+    }
+  }
+
+  // Update the player
   player.update();
 }
 
@@ -431,5 +617,21 @@ window.addEventListener('keyup', (event) => {
   if (event.key === 'w') { keyPressed.w = false; }
 });
 
+// Preload the images on game start to reduce lag
+function preloadAnimations() {
+  const imagesToPreload = [
+    './asset/player/cat_idle.png',
+    './asset/player/cat_walk.png',
+    './asset/player/cat_jump.png'
+  ];
+
+  imagesToPreload.forEach(src => {
+    const img = new Image();
+    img.src = src;
+  });
+}
+
+// Call preload before initializing the level
+preloadAnimations();
 initializeLevel();
 gameLoop();
